@@ -1,13 +1,16 @@
+import fastifyCors from "@fastify/cors";
 import Fastify from "fastify";
+import { generateNote } from "./routes/generate-note";
+import { env } from "./env";
 
-const fastify = Fastify({
-	logger: true,
+const server = Fastify();
+
+server.register(fastifyCors, {
+	origin: "*",
 });
 
-fastify.get("/", (request, reply) => {
-	reply.send({ hello: "world" });
-});
+server.register(generateNote);
 
-fastify.listen({ port: 3000 }).then(() => {
+server.listen({ port: env.PORT }).then(() => {
 	console.log("HTTP server running!");
 });

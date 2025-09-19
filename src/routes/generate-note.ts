@@ -1,17 +1,17 @@
-import { deepseek } from "@ai-sdk/deepseek";
 import { openrouter } from "@openrouter/ai-sdk-provider";
-import { generateText } from "ai";
+import { convertToModelMessages, streamText, UIMessage } from "ai";
 import { FastifyInstance } from "fastify";
 
 export async function generateNote(app: FastifyInstance) {
 	app.post("/ai", async (request, reply) => {
-		const { prompt } = request.body as { prompt: string };
-		const result = await generateText({
+		const { messages } = request.body as { messages: UIMessage[] };
+
+		const result = streamText({
 			model: openrouter.chat("deepseek/deepseek-chat-v3.1:free"),
-			prompt,
-			system: "Voce é uma ia especializada em resumir coisas de forma sucinta",
+			messages: convertToModelMessages(messages),
+			system: `Você é um assistente que ajuda o usuário a editar notas em Markdown. Sempre responda apenas com o conteúdo atualizado da nota, sem explicações extras, sem aspas no início ou fim.`,
 		});
 
-		reply.send({ message: result });
+		return reply.send(result.toUIMessageStreamResponse());
 	});
 }

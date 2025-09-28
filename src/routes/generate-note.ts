@@ -2,7 +2,7 @@ import { openrouter } from "@openrouter/ai-sdk-provider";
 import { convertToModelMessages, streamText, UIMessage } from "ai";
 import { FastifyInstance } from "fastify";
 
-export async function generateNote(app: FastifyInstance) {
+export async function generateNoteRoute(app: FastifyInstance) {
 	app.post("/ai", async (request, reply) => {
 		const { messages } = request.body as { messages: UIMessage[] };
 

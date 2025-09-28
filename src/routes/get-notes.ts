@@ -1,4 +1,4 @@
-import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { db } from "../db/connection";
 import { schema } from "../db/schema";
 

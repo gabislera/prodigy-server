@@ -8,6 +8,20 @@
       "when": 1758287886795,
       "tag": "0000_purple_rocket_raccoon",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1759085536971,
+      "tag": "0001_glossy_roland_deschain",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759106395776,
+      "tag": "0002_yummy_bloodaxe",
+      "breakpoints": true
     }
   ]
 }

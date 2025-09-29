@@ -1,3 +1,4 @@
 import { notes } from "./notes";
+import { events } from "./events";
 
-export const schema = { notes };
+export const schema = { notes, events };

@@ -14,15 +14,17 @@ export const createTaskRoute: FastifyPluginAsyncZod = async (server) => {
 					priority: z.enum(["high", "medium", "low"]).default("medium"),
 					columnId: z.uuid(),
 					position: z.number().optional().default(0),
+					completed: z.boolean().optional().default(false),
 				}),
 			},
 		},
 		async (request, reply) => {
-			const { title, description, priority, columnId, position } = request.body;
+			const { title, description, priority, columnId, position, completed } =
+				request.body;
 
 			const [task] = await db
 				.insert(schema.tasks)
-				.values({ title, description, priority, columnId, position })
+				.values({ title, description, priority, columnId, position, completed })
 				.returning();
 
 			return reply.status(201).send(task);

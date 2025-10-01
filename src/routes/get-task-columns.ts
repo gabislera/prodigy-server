@@ -24,7 +24,11 @@ export const getTaskColumnsRoute: FastifyPluginAsyncZod = async (server) => {
 			.from(schema.taskColumns)
 			.leftJoin(schema.tasks, eq(schema.tasks.columnId, schema.taskColumns.id))
 			.where(eq(schema.taskColumns.groupId, id))
-			.orderBy(schema.taskColumns.order, schema.tasks.position);
+			.orderBy(
+				schema.taskColumns.order,
+				schema.tasks.completed,
+				schema.tasks.position,
+			);
 
 		// transforma em estrutura hierárquica
 		const columnsMap = new Map();

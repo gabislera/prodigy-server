@@ -10,7 +10,7 @@ export const createTaskRoute: FastifyPluginAsyncZod = async (server) => {
 			schema: {
 				body: z.object({
 					title: z.string().min(1),
-					description: z.string().min(1),
+					description: z.string().optional().default(""),
 					priority: z.enum(["high", "medium", "low"]).default("medium"),
 					columnId: z.uuid(),
 					position: z.number().optional().default(0),

@@ -17,6 +17,7 @@ export const getTaskColumnsRoute: FastifyPluginAsyncZod = async (server) => {
 				taskDescription: schema.tasks.description,
 				taskPriority: schema.tasks.priority,
 				taskPosition: schema.tasks.position,
+				taskCompleted: schema.tasks.completed,
 				taskCreatedAt: schema.tasks.createdAt,
 				taskUpdatedAt: schema.tasks.updatedAt,
 			})
@@ -47,6 +48,7 @@ export const getTaskColumnsRoute: FastifyPluginAsyncZod = async (server) => {
 					priority: row.taskPriority,
 					columnId: row.columnId,
 					position: row.taskPosition,
+					completed: row.taskCompleted,
 					createdAt: row.taskCreatedAt,
 					updatedAt: row.taskUpdatedAt,
 				});

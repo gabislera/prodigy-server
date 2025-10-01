@@ -18,6 +18,7 @@ export const updateTaskRoute: FastifyPluginAsyncZod = async (server) => {
 					priority: z.enum(["high", "medium", "low"]).optional(),
 					columnId: z.string().uuid().optional(),
 					position: z.number().optional(),
+					completed: z.boolean().optional(),
 				}),
 			},
 		},

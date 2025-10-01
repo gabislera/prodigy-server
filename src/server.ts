@@ -13,6 +13,7 @@ import { createTaskGroupRoute } from "./routes/create-task-group";
 import { deleteEventRoute } from "./routes/delete-event";
 import { deleteNoteRoute } from "./routes/delete-note";
 import { deleteTaskRoute } from "./routes/delete-task";
+import { deleteTaskGroupRoute } from "./routes/delete-task-group";
 import { generateNoteRoute } from "./routes/generate-note";
 import { getEventsRoute } from "./routes/get-events";
 import { getNotesRoute } from "./routes/get-notes";
@@ -21,6 +22,7 @@ import { getTaskGroupsRoute } from "./routes/get-task-groups";
 import { updateColumnOrderRoute } from "./routes/update-column-order";
 import { updateNoteRoute } from "./routes/update-note";
 import { updateTaskRoute } from "./routes/update-task";
+import { updateTaskGroupRoute } from "./routes/update-task-group";
 
 const server = Fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -46,8 +48,10 @@ server.register(createTaskRoute);
 server.register(getTaskGroupsRoute);
 server.register(getTaskColumnsRoute);
 server.register(updateTaskRoute);
+server.register(updateTaskGroupRoute);
 server.register(updateColumnOrderRoute);
 server.register(deleteTaskRoute);
+server.register(deleteTaskGroupRoute);
 
 server.listen({ port: env.PORT }).then(() => {
 	console.log("HTTP server running!");

@@ -1,3 +1,4 @@
+import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
 import Fastify from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
@@ -19,6 +20,10 @@ import { getEventsRoute } from "./routes/get-events";
 import { getNotesRoute } from "./routes/get-notes";
 import { getTaskColumnsRoute } from "./routes/get-task-columns";
 import { getTaskGroupsRoute } from "./routes/get-task-groups";
+import { loginRoute } from "./routes/login";
+import { logoutRoute } from "./routes/logout";
+import { refreshTokenRoute } from "./routes/refresh-token";
+import { registerRoute } from "./routes/register";
 import { updateColumnOrderRoute } from "./routes/update-column-order";
 import { updateNoteRoute } from "./routes/update-note";
 import { updateTaskRoute } from "./routes/update-task";
@@ -34,6 +39,8 @@ server.register(fastifyCors, {
 	methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 	allowedHeaders: ["Content-Type", "Authorization"],
 });
+
+server.register(fastifyCookie);
 
 server.register(generateNoteRoute);
 server.register(createNoteRoute);
@@ -52,6 +59,10 @@ server.register(updateTaskGroupRoute);
 server.register(updateColumnOrderRoute);
 server.register(deleteTaskRoute);
 server.register(deleteTaskGroupRoute);
+server.register(loginRoute);
+server.register(registerRoute);
+server.register(logoutRoute);
+server.register(refreshTokenRoute);
 
 server.listen({ port: env.PORT }).then(() => {
 	console.log("HTTP server running!");

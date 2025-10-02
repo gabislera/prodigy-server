@@ -15,6 +15,13 @@
       "when": 1759334745225,
       "tag": "0001_jittery_the_hood",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759423949836,
+      "tag": "0002_striped_black_knight",
+      "breakpoints": true
     }
   ]
 }

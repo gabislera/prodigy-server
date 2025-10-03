@@ -1,7 +1,11 @@
-import { pgTable, text, uuid, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { uuidv7 } from "uuidv7";
 
 export const notes = pgTable("notes", {
-	id: uuid("id").defaultRandom().primaryKey(),
+	id: text("id")
+		.primaryKey()
+		.$defaultFn(() => uuidv7()),
+	userId: text("user_id").notNull(),
 	title: text("title").notNull(),
 	content: text("content"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),

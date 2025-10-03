@@ -1,6 +1,6 @@
 CREATE TYPE "public"."priority" AS ENUM('high', 'medium', 'low');--> statement-breakpoint
 CREATE TABLE "events" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"title" text NOT NULL,
 	"description" text,
 	"type" text NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE "events" (
 );
 --> statement-breakpoint
 CREATE TABLE "notes" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"title" text NOT NULL,
 	"content" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -19,16 +19,18 @@ CREATE TABLE "notes" (
 );
 --> statement-breakpoint
 CREATE TABLE "task_columns" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"group_id" text NOT NULL,
 	"title" text NOT NULL,
-	"group_id" uuid NOT NULL,
 	"order" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "task_groups" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
 	"name" text NOT NULL,
 	"icon" text NOT NULL,
 	"color" text NOT NULL,
@@ -38,14 +40,47 @@ CREATE TABLE "task_groups" (
 );
 --> statement-breakpoint
 CREATE TABLE "tasks" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"column_id" text NOT NULL,
 	"title" text NOT NULL,
 	"description" text NOT NULL,
 	"priority" "priority" DEFAULT 'medium' NOT NULL,
-	"column_id" uuid NOT NULL,
 	"position" integer DEFAULT 0 NOT NULL,
+	"completed" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "accounts" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"provider" text NOT NULL,
+	"provider_account_id" text NOT NULL,
+	"access_token" text,
+	"refresh_token" text,
+	"expires_at" timestamp,
+	"token_type" text,
+	"scope" text
+);
+--> statement-breakpoint
+CREATE TABLE "sessions" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"session_token" text NOT NULL,
+	"created_at" timestamp DEFAULT now(),
+	"expires_at" timestamp NOT NULL,
+	CONSTRAINT "sessions_session_token_unique" UNIQUE("session_token")
+);
+--> statement-breakpoint
+CREATE TABLE "users" (
+	"id" text PRIMARY KEY NOT NULL,
+	"email" text NOT NULL,
+	"name" text NOT NULL,
+	"password_hash" text,
+	"created_at" timestamp DEFAULT now(),
+	"updated_at" timestamp DEFAULT now(),
+	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
 ALTER TABLE "task_columns" ADD CONSTRAINT "task_columns_group_id_task_groups_id_fk" FOREIGN KEY ("group_id") REFERENCES "public"."task_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

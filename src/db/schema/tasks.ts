@@ -8,11 +8,15 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { uuidv7 } from "uuidv7";
 
 export const priorityEnum = pgEnum("priority", ["high", "medium", "low"]);
 
 export const taskGroups = pgTable("task_groups", {
-	id: uuid("id").defaultRandom().primaryKey(),
+	id: text("id")
+		.primaryKey()
+		.$defaultFn(() => uuidv7()),
+	userId: text("user_id").notNull(),
 	name: text("name").notNull(),
 	icon: text("icon").notNull(),
 	color: text("color").notNull(),
@@ -26,11 +30,14 @@ export const taskGroups = pgTable("task_groups", {
 });
 
 export const taskColumns = pgTable("task_columns", {
-	id: uuid("id").defaultRandom().primaryKey(),
-	title: text("title").notNull(),
-	groupId: uuid("group_id")
+	id: text("id")
+		.primaryKey()
+		.$defaultFn(() => uuidv7()),
+	userId: text("user_id").notNull(),
+	groupId: text("group_id")
 		.notNull()
 		.references(() => taskGroups.id, { onDelete: "cascade" }),
+	title: text("title").notNull(),
 	order: integer("order").default(0).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.defaultNow()
@@ -41,13 +48,16 @@ export const taskColumns = pgTable("task_columns", {
 });
 
 export const tasks = pgTable("tasks", {
-	id: uuid("id").defaultRandom().primaryKey(),
+	id: text("id")
+		.primaryKey()
+		.$defaultFn(() => uuidv7()),
+	userId: text("user_id").notNull(),
+	columnId: text("column_id")
+		.notNull()
+		.references(() => taskColumns.id, { onDelete: "cascade" }),
 	title: text("title").notNull(),
 	description: text("description").notNull(),
 	priority: priorityEnum("priority").default("medium").notNull(),
-	columnId: uuid("column_id")
-		.notNull()
-		.references(() => taskColumns.id, { onDelete: "cascade" }),
 	position: integer("position").default(0).notNull(),
 	completed: boolean("completed").default(false).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true })

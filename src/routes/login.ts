@@ -47,9 +47,12 @@ export const loginRoute: FastifyPluginAsyncZod = async (server) => {
 				expiresAt,
 			});
 
-			const accessToken = generateAccessToken(user.id);
+			const accessToken = generateAccessToken({
+				id: user.id,
+				name: user.name,
+				email: user.email,
+			});
 
-			// Refresh token via cookie HttpOnly
 			reply.setCookie("refreshToken", sessionToken, {
 				httpOnly: true,
 				sameSite: "strict",

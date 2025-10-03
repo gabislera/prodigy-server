@@ -20,7 +20,20 @@ export const refreshTokenRoute: FastifyPluginAsyncZod = async (server) => {
 			return reply.status(401).send({ error: "Invalid or expired session" });
 		}
 
-		const accessToken = generateAccessToken(session.userId);
+		// Buscar dados do usuário para incluir no token
+		const user = await db.query.users.findFirst({
+			where: eq(schema.users.id, session.userId),
+		});
+
+		if (!user) {
+			return reply.status(401).send({ error: "User not found" });
+		}
+
+		const accessToken = generateAccessToken({
+			id: user.id,
+			name: user.name,
+			email: user.email,
+		});
 
 		return { accessToken };
 	});

@@ -30,7 +30,6 @@ export const registerRoute: FastifyPluginAsyncZod = async (server) => {
 		async (request, reply) => {
 			const { email, name, password } = request.body;
 
-			// 🔎 Verifica se já existe usuário
 			const existing = await db.query.users.findFirst({
 				where: eq(schema.users.email, email),
 			});
@@ -39,16 +38,13 @@ export const registerRoute: FastifyPluginAsyncZod = async (server) => {
 				return reply.status(400).send({ error: "Email already in use" });
 			}
 
-			// 🔐 Cria hash da senha
 			const hash = await argon2.hash(password, argon2Options);
 
-			// 👤 Cria usuário
 			const [user] = await db
 				.insert(schema.users)
 				.values({ name, email, passwordHash: hash })
 				.returning();
 
-			// 🔑 Cria sessão igual no login
 			const sessionToken = randomUUID();
 			const expiresAt = new Date(
 				Date.now() + REFRESH_TOKEN_EXPIRES_DAYS * 24 * 60 * 60 * 1000,
@@ -60,9 +56,12 @@ export const registerRoute: FastifyPluginAsyncZod = async (server) => {
 				expiresAt,
 			});
 
-			const accessToken = generateAccessToken(user.id);
+			const accessToken = generateAccessToken({
+				id: user.id,
+				name: user.name,
+				email: user.email,
+			});
 
-			// 🍪 Refresh token no cookie HttpOnly
 			reply.setCookie("refreshToken", sessionToken, {
 				httpOnly: true,
 				sameSite: "strict",
@@ -71,7 +70,6 @@ export const registerRoute: FastifyPluginAsyncZod = async (server) => {
 				expires: expiresAt,
 			});
 
-			// ✅ Retorna igual ao login
 			return { user, accessToken };
 		},
 	);

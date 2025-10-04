@@ -12,8 +12,6 @@ export async function authGuard(
 		return reply.status(401).send({ error: "Unauthorized" });
 	}
 
-	console.log(authHeader);
-
 	const token = authHeader.split(" ")[1];
 
 	try {

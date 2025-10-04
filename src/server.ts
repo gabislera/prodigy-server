@@ -28,6 +28,7 @@ import { updateColumnOrderRoute } from "./routes/update-column-order";
 import { updateNoteRoute } from "./routes/update-note";
 import { updateTaskRoute } from "./routes/update-task";
 import { updateTaskGroupRoute } from "./routes/update-task-group";
+import { updateUser } from "./routes/update-user";
 
 const server = Fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -64,6 +65,7 @@ server.register(loginRoute);
 server.register(registerRoute);
 server.register(logoutRoute);
 server.register(refreshTokenRoute);
+server.register(updateUser);
 
 server.listen({ port: env.PORT }).then(() => {
 	console.log("HTTP server running!");

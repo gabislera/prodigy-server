@@ -1,25 +1,30 @@
-import { eq } from "drizzle-orm";
-import { db } from "../db/connection";
-import { schema } from "../db/schema";
+import { and, eq } from "drizzle-orm";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import z from "zod";
+import { db } from "../db/connection";
+import { schema } from "../db/schema";
+import { authGuard } from "../plugins/auth-guard";
+import type { AuthenticatedRequest } from "../types/fastify";
 
 export const deleteNoteRoute: FastifyPluginAsyncZod = async (server) => {
 	server.delete(
 		"/notes/:id",
 		{
+			preHandler: authGuard,
 			schema: {
 				params: z.object({
 					id: z.string(),
 				}),
 			},
 		},
-		async (request, reply) => {
+		async (request: AuthenticatedRequest, reply) => {
 			const { id } = request.params;
+
+			const userId = request.user.id;
 
 			const deletedNotes = await db
 				.delete(schema.notes)
-				.where(eq(schema.notes.id, id))
+				.where(and(eq(schema.notes.id, id), eq(schema.notes.userId, userId)))
 				.returning();
 
 			if (deletedNotes.length === 0) {
@@ -30,5 +35,3 @@ export const deleteNoteRoute: FastifyPluginAsyncZod = async (server) => {
 		},
 	);
 };
-
-

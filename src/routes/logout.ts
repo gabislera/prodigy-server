@@ -13,7 +13,10 @@ export const logoutRoute: FastifyPluginAsyncZod = async (server) => {
 				.where(eq(schema.sessions.sessionToken, refreshToken));
 		}
 
-		reply.clearCookie("refreshToken");
+		reply.clearCookie("refreshToken", {
+			path: "/",
+			sameSite: "lax",
+		});
 
 		return { success: true };
 	});

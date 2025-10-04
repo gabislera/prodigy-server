@@ -1,12 +1,15 @@
-import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import z from "zod";
 import { db } from "../db/connection";
 import { schema } from "../db/schema";
+import { authGuard } from "../plugins/auth-guard";
+import type { AuthenticatedRequest } from "../types/fastify";
 
 export const createEventRoute: FastifyPluginAsyncZod = async (server) => {
 	server.post(
 		"/events",
 		{
+			preHandler: authGuard,
 			schema: {
 				body: z.object({
 					title: z.string().min(1),
@@ -17,12 +20,15 @@ export const createEventRoute: FastifyPluginAsyncZod = async (server) => {
 				}),
 			},
 		},
-		async (request, reply) => {
+		async (request: AuthenticatedRequest, reply) => {
 			const { title, description, type, startDate, endDate } = request.body;
+
+			const userId = request.user.id;
 
 			const result = await db
 				.insert(schema.events)
 				.values({
+					userId,
 					title,
 					description,
 					type,

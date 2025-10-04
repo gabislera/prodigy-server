@@ -1,13 +1,16 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import z from "zod";
 import { db } from "../db/connection";
 import { schema } from "../db/schema";
+import { authGuard } from "../plugins/auth-guard";
+import type { AuthenticatedRequest } from "../types/fastify";
 
 export const updateTaskGroupRoute: FastifyPluginAsyncZod = async (server) => {
 	server.put(
 		"/task_group/:id",
 		{
+			preHandler: authGuard,
 			schema: {
 				params: z.object({
 					id: z.string().uuid(),
@@ -20,9 +23,11 @@ export const updateTaskGroupRoute: FastifyPluginAsyncZod = async (server) => {
 				}),
 			},
 		},
-		async (request, reply) => {
+		async (request: AuthenticatedRequest, reply) => {
 			const { id } = request.params;
 			const updateData = request.body;
+
+			const userId = request.user.id;
 
 			// Remove undefined values
 			const cleanUpdateData = Object.fromEntries(
@@ -41,7 +46,12 @@ export const updateTaskGroupRoute: FastifyPluginAsyncZod = async (server) => {
 					...cleanUpdateData,
 					updatedAt: new Date(),
 				})
-				.where(eq(schema.taskGroups.id, id))
+				.where(
+					and(
+						eq(schema.taskGroups.id, id),
+						eq(schema.taskGroups.userId, userId),
+					),
+				)
 				.returning();
 
 			if (updatedGroups.length === 0) {

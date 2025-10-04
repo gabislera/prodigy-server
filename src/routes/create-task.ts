@@ -2,11 +2,14 @@ import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import z from "zod";
 import { db } from "../db/connection";
 import { schema } from "../db/schema";
+import { authGuard } from "../plugins/auth-guard";
+import type { AuthenticatedRequest } from "../types/fastify";
 
 export const createTaskRoute: FastifyPluginAsyncZod = async (server) => {
 	server.post(
 		"/task",
 		{
+			preHandler: authGuard,
 			schema: {
 				body: z.object({
 					title: z.string().min(1),
@@ -18,13 +21,23 @@ export const createTaskRoute: FastifyPluginAsyncZod = async (server) => {
 				}),
 			},
 		},
-		async (request, reply) => {
+		async (request: AuthenticatedRequest, reply) => {
 			const { title, description, priority, columnId, position, completed } =
 				request.body;
 
+			const userId = request.user.id;
+
 			const [task] = await db
 				.insert(schema.tasks)
-				.values({ title, description, priority, columnId, position, completed })
+				.values({
+					userId,
+					title,
+					description,
+					priority,
+					columnId,
+					position,
+					completed,
+				})
 				.returning();
 
 			return reply.status(201).send(task);

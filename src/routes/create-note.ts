@@ -1,12 +1,15 @@
-import { db } from "../db/connection";
-import { schema } from "../db/schema";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import z from "zod";
+import { db } from "../db/connection";
+import { schema } from "../db/schema";
+import { authGuard } from "../plugins/auth-guard";
+import type { AuthenticatedRequest } from "../types/fastify";
 
 export const createNoteRoute: FastifyPluginAsyncZod = async (server) => {
 	server.post(
 		"/notes",
 		{
+			preHandler: authGuard,
 			schema: {
 				body: z.object({
 					title: z.string().min(1),
@@ -14,12 +17,14 @@ export const createNoteRoute: FastifyPluginAsyncZod = async (server) => {
 				}),
 			},
 		},
-		async (request, reply) => {
+		async (request: AuthenticatedRequest, reply) => {
 			const { title, content } = request.body;
+
+			const userId = request.user.id;
 
 			const result = await db
 				.insert(schema.notes)
-				.values({ title, content })
+				.values({ userId, title, content })
 				.returning();
 
 			const insertedNote = result[0];

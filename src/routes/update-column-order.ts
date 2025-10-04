@@ -1,13 +1,16 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import z from "zod";
 import { db } from "../db/connection";
 import { schema } from "../db/schema";
+import { authGuard } from "../plugins/auth-guard";
+import type { AuthenticatedRequest } from "../types/fastify";
 
 export const updateColumnOrderRoute: FastifyPluginAsyncZod = async (server) => {
 	server.put(
 		"/task_groups/:id/columns/order",
 		{
+			preHandler: authGuard,
 			schema: {
 				params: z.object({
 					id: z.uuid(),
@@ -22,8 +25,10 @@ export const updateColumnOrderRoute: FastifyPluginAsyncZod = async (server) => {
 				}),
 			},
 		},
-		async (request, reply) => {
+		async (request: AuthenticatedRequest, reply) => {
 			const { columnOrders } = request.body;
+
+			const userId = request.user.id;
 
 			try {
 				await db.transaction(async (tx) => {
@@ -34,7 +39,12 @@ export const updateColumnOrderRoute: FastifyPluginAsyncZod = async (server) => {
 								order,
 								updatedAt: new Date(),
 							})
-							.where(eq(schema.taskColumns.id, columnId));
+							.where(
+								and(
+									eq(schema.taskColumns.id, columnId),
+									eq(schema.taskColumns.userId, userId),
+								),
+							);
 					}
 				});
 

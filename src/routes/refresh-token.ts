@@ -35,6 +35,6 @@ export const refreshTokenRoute: FastifyPluginAsyncZod = async (server) => {
 			email: user.email,
 		});
 
-		return { accessToken };
+		return reply.send({ accessToken });
 	});
 };

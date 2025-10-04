@@ -64,8 +64,8 @@ export const registerRoute: FastifyPluginAsyncZod = async (server) => {
 
 			reply.setCookie("refreshToken", sessionToken, {
 				httpOnly: true,
-				sameSite: "strict",
-				// secure: process.env.NODE_ENV === "production",
+				sameSite: "lax", // Use 'lax' for development
+				secure: process.env.NODE_ENV === "production",
 				path: "/",
 				expires: expiresAt,
 			});

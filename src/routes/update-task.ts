@@ -3,11 +3,14 @@ import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import z from "zod";
 import { db } from "../db/connection";
 import { schema } from "../db/schema";
+import { authGuard } from "../plugins/auth-guard";
+import type { AuthenticatedRequest } from "../types/fastify";
 
 export const updateTaskRoute: FastifyPluginAsyncZod = async (server) => {
 	server.put(
 		"/task/:id",
 		{
+			preHandler: authGuard, // protege a rota
 			schema: {
 				params: z.object({
 					id: z.string().uuid(),
@@ -22,9 +25,10 @@ export const updateTaskRoute: FastifyPluginAsyncZod = async (server) => {
 				}),
 			},
 		},
-		async (request, reply) => {
+		async (request: AuthenticatedRequest, reply) => {
 			const { id } = request.params;
 			const updateData = request.body;
+			const userId = request.user.id;
 
 			// Remove undefined values
 			const cleanUpdateData = Object.fromEntries(
@@ -37,11 +41,11 @@ export const updateTaskRoute: FastifyPluginAsyncZod = async (server) => {
 					.send({ message: "Nenhum campo para atualizar" });
 			}
 
-			// Get the current task to check its current state
+			// Buscar a task e verificar se pertence ao usuário
 			const currentTask = await db
 				.select()
 				.from(schema.tasks)
-				.where(eq(schema.tasks.id, id))
+				.where(and(eq(schema.tasks.id, id), eq(schema.tasks.userId, userId)))
 				.limit(1);
 
 			if (currentTask.length === 0) {
@@ -50,29 +54,31 @@ export const updateTaskRoute: FastifyPluginAsyncZod = async (server) => {
 
 			const task = currentTask[0];
 
-			// If the completed status is being changed, we need to reorder tasks
+			// Se o status completed mudou → reposiciona
 			if (
 				updateData.completed !== undefined &&
 				updateData.completed !== task.completed
 			) {
-				const isCompleting = updateData.completed === true;
 				const columnId = task.columnId;
 
-				if (isCompleting) {
-					// When completing a task, move it to the end (highest position)
-					// Get the current max position in the column
+				if (updateData.completed) {
+					// completando → joga pro fim
 					const maxPositionResult = await db
 						.select({
 							maxPosition: sql<number>`COALESCE(MAX(${schema.tasks.position}), 0)`,
 						})
 						.from(schema.tasks)
-						.where(eq(schema.tasks.columnId, columnId));
+						.where(
+							and(
+								eq(schema.tasks.columnId, columnId),
+								eq(schema.tasks.userId, userId),
+							),
+						);
 
-					const newPosition = (maxPositionResult[0]?.maxPosition || 0) + 1;
-					cleanUpdateData.position = newPosition;
+					cleanUpdateData.position =
+						(maxPositionResult[0]?.maxPosition || 0) + 1;
 				} else {
-					// When uncompleting a task, move it to the beginning (position 0)
-					// First, increment all other tasks' positions by 1
+					// reabrindo → joga pro topo
 					await db
 						.update(schema.tasks)
 						.set({
@@ -83,6 +89,7 @@ export const updateTaskRoute: FastifyPluginAsyncZod = async (server) => {
 							and(
 								eq(schema.tasks.columnId, columnId),
 								eq(schema.tasks.completed, false),
+								eq(schema.tasks.userId, userId),
 							),
 						);
 
@@ -90,13 +97,14 @@ export const updateTaskRoute: FastifyPluginAsyncZod = async (server) => {
 				}
 			}
 
+			// Atualizar
 			const updatedTasks = await db
 				.update(schema.tasks)
 				.set({
 					...cleanUpdateData,
 					updatedAt: new Date(),
 				})
-				.where(eq(schema.tasks.id, id))
+				.where(and(eq(schema.tasks.id, id), eq(schema.tasks.userId, userId)))
 				.returning();
 
 			if (updatedTasks.length === 0) {

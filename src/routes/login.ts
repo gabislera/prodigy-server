@@ -1,3 +1,4 @@
+// routes/auth/login.ts
 import { randomUUID } from "node:crypto";
 import * as argon2 from "argon2";
 import { eq } from "drizzle-orm";
@@ -12,15 +13,11 @@ export const loginRoute: FastifyPluginAsyncZod = async (server) => {
 		"/auth/login",
 		{
 			schema: {
-				body: z.object({
-					email: z.email(),
-					password: z.string(),
-				}),
+				body: z.object({ email: z.email(), password: z.string() }),
 			},
 		},
 		async (request, reply) => {
 			const { email, password } = request.body;
-
 			const user = await db.query.users.findFirst({
 				where: eq(schema.users.email, email),
 			});
@@ -30,12 +27,11 @@ export const loginRoute: FastifyPluginAsyncZod = async (server) => {
 			}
 
 			const isPasswordValid = await argon2.verify(user.passwordHash, password);
-
-			if (!isPasswordValid) {
+			if (!isPasswordValid)
 				return reply.status(401).send({ error: "Invalid credentials" });
-			}
 
-			const sessionToken = randomUUID();
+			// ---------- create refresh token (raw) ----------
+			const sessionToken = randomUUID(); // pode ser mais longo se quiser
 
 			const expiresAt = new Date(
 				Date.now() + REFRESH_TOKEN_EXPIRES_DAYS * 24 * 60 * 60 * 1000,
@@ -45,23 +41,27 @@ export const loginRoute: FastifyPluginAsyncZod = async (server) => {
 				userId: user.id,
 				sessionToken,
 				expiresAt,
+				// opcional: device, ip, userAgent
 			});
 
 			const accessToken = generateAccessToken({
 				id: user.id,
-				name: user.name,
 				email: user.email,
+				name: user.name,
 			});
 
+			// Cookie: envia o token bruto (somente no cookie HttpOnly) — no DB só o hash.
 			reply.setCookie("refreshToken", sessionToken, {
 				httpOnly: true,
-				sameSite: "strict",
-				// secure: process.env.NODE_ENV === "production",
-				path: "/",
+				sameSite: "lax", // Use 'lax' for development
+				secure: process.env.NODE_ENV === "production",
+				path: "/", // permitir o cookie em todas as rotas
 				expires: expiresAt,
 			});
 
-			return { accessToken, user };
+			// enviar access token no body, user sem password
+			const { passwordHash: _, ...userSafe } = user as any;
+			return reply.send({ accessToken, user: userSafe });
 		},
 	);
 };

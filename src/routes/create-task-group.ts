@@ -2,11 +2,14 @@ import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import z from "zod";
 import { db } from "../db/connection";
 import { schema } from "../db/schema";
+import { authGuard } from "../plugins/auth-guard";
+import type { AuthenticatedRequest } from "../types/fastify";
 
 export const createTaskGroupRoute: FastifyPluginAsyncZod = async (server) => {
 	server.post(
 		"/task_group",
 		{
+			preHandler: authGuard,
 			schema: {
 				body: z.object({
 					name: z.string().min(1),
@@ -16,12 +19,14 @@ export const createTaskGroupRoute: FastifyPluginAsyncZod = async (server) => {
 				}),
 			},
 		},
-		async (request, reply) => {
+		async (request: AuthenticatedRequest, reply) => {
 			const { name, icon, color, bgColor } = request.body;
+
+			const userId = request.user.id;
 
 			const result = await db
 				.insert(schema.taskGroups)
-				.values({ name, icon, color, bgColor })
+				.values({ userId, name, icon, color, bgColor })
 				.returning();
 
 			const insertedGroup = result[0];
@@ -33,9 +38,9 @@ export const createTaskGroupRoute: FastifyPluginAsyncZod = async (server) => {
 			const columns = await db
 				.insert(schema.taskColumns)
 				.values([
-					{ title: "A Fazer", groupId: insertedGroup.id, order: 1 },
-					{ title: "Fazendo", groupId: insertedGroup.id, order: 2 },
-					{ title: "Completa", groupId: insertedGroup.id, order: 3 },
+					{ userId, title: "A Fazer", groupId: insertedGroup.id, order: 1 },
+					{ userId, title: "Fazendo", groupId: insertedGroup.id, order: 2 },
+					{ userId, title: "Completa", groupId: insertedGroup.id, order: 3 },
 				])
 				.returning();
 

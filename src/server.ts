@@ -7,17 +7,14 @@ import {
 	validatorCompiler,
 } from "fastify-type-provider-zod";
 import { env } from "./env";
+import { registerNoteRoutes } from "./modules/notes";
 import { createEventRoute } from "./routes/create-event";
-import { createNoteRoute } from "./routes/create-note";
 import { createTaskRoute } from "./routes/create-task";
 import { createTaskGroupRoute } from "./routes/create-task-group";
 import { deleteEventRoute } from "./routes/delete-event";
-import { deleteNoteRoute } from "./routes/delete-note";
 import { deleteTaskRoute } from "./routes/delete-task";
 import { deleteTaskGroupRoute } from "./routes/delete-task-group";
-import { generateNoteRoute } from "./routes/generate-note";
 import { getEventsRoute } from "./routes/get-events";
-import { getNotesRoute } from "./routes/get-notes";
 import { getTaskColumnsRoute } from "./routes/get-task-columns";
 import { getTaskGroupsRoute } from "./routes/get-task-groups";
 import { loginRoute } from "./routes/login";
@@ -25,7 +22,6 @@ import { logoutRoute } from "./routes/logout";
 import { refreshTokenRoute } from "./routes/refresh-token";
 import { registerRoute } from "./routes/register";
 import { updateColumnOrderRoute } from "./routes/update-column-order";
-import { updateNoteRoute } from "./routes/update-note";
 import { updateTaskRoute } from "./routes/update-task";
 import { updateTaskGroupRoute } from "./routes/update-task-group";
 import { updateUser } from "./routes/update-user";
@@ -44,11 +40,8 @@ server.register(fastifyCors, {
 
 server.register(fastifyCookie);
 
-server.register(generateNoteRoute);
-server.register(createNoteRoute);
-server.register(getNotesRoute);
-server.register(updateNoteRoute);
-server.register(deleteNoteRoute);
+server.register(registerNoteRoutes, { prefix: "/notes" });
+
 server.register(createEventRoute);
 server.register(getEventsRoute);
 server.register(deleteEventRoute);

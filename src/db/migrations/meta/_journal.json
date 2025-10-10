@@ -15,6 +15,13 @@
       "when": 1759500307967,
       "tag": "0001_broad_hellfire_club",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760015534711,
+      "tag": "0002_smiling_silver_centurion",
+      "breakpoints": true
     }
   ]
 }

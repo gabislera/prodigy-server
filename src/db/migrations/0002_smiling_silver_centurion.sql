@@ -1,0 +1,20 @@
+CREATE TABLE "items" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"type" text DEFAULT 'task' NOT NULL,
+	"title" text NOT NULL,
+	"description" text,
+	"start_date" timestamp with time zone,
+	"end_date" timestamp with time zone,
+	"all_day" boolean DEFAULT false,
+	"column_id" text,
+	"position" text,
+	"priority" text,
+	"completed" boolean DEFAULT false,
+	"google_event_id" text,
+	"google_calendar_id" text,
+	"hangout_link" text,
+	"status" text DEFAULT 'confirmed',
+	"created_at" timestamp with time zone DEFAULT now(),
+	"updated_at" timestamp with time zone DEFAULT now()
+);

@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "../../../../db/connection";
 import { schema } from "../../../../db/schema";
 import type { CreateTaskSchema, UpdateTaskSchema } from "../schema";
@@ -6,7 +6,7 @@ import type { CreateTaskSchema, UpdateTaskSchema } from "../schema";
 export const tasksRepository = {
 	async create(userId: string, data: CreateTaskSchema) {
 		const result = await db
-			.insert(schema.items)
+			.insert(schema.tasks)
 			.values({
 				...data,
 				userId,
@@ -20,8 +20,8 @@ export const tasksRepository = {
 
 	async delete(userId: string, id: string) {
 		const result = await db
-			.delete(schema.items)
-			.where(and(eq(schema.items.userId, userId), eq(schema.items.id, id)))
+			.delete(schema.tasks)
+			.where(and(eq(schema.tasks.userId, userId), eq(schema.tasks.id, id)))
 			.returning();
 		return result[0];
 	},
@@ -43,8 +43,8 @@ export const tasksRepository = {
 		// Check if the task exists and belongs to the current user
 		const currentTask = await db
 			.select()
-			.from(schema.items)
-			.where(and(eq(schema.items.id, id), eq(schema.items.userId, userId)))
+			.from(schema.tasks)
+			.where(and(eq(schema.tasks.id, id), eq(schema.tasks.userId, userId)))
 			.limit(1);
 
 		if (currentTask.length === 0) {
@@ -68,13 +68,15 @@ export const tasksRepository = {
 					// When completing → move to the last position
 					const [maxPositionResult] = await db
 						.select({
-							maxPosition: sql<number>`COALESCE(MAX(${schema.items.position}), 0)`,
+							maxPosition: sql<number>`COALESCE(MAX(${schema.tasks.position}), 0)`,
 						})
-						.from(schema.items)
+						.from(schema.tasks)
 						.where(
 							and(
-								eq(schema.items.columnId, columnId),
-								eq(schema.items.userId, userId),
+								columnId
+									? eq(schema.tasks.columnId, columnId)
+									: isNull(schema.tasks.columnId),
+								eq(schema.tasks.userId, userId),
 							),
 						);
 
@@ -82,16 +84,18 @@ export const tasksRepository = {
 				} else {
 					// When reopening → push other open tasks down and place at the top
 					await db
-						.update(schema.items)
+						.update(schema.tasks)
 						.set({
-							position: sql`${schema.items.position} + 1`,
+							position: sql`${schema.tasks.position} + 1`,
 							updatedAt: new Date(),
 						})
 						.where(
 							and(
-								eq(schema.items.columnId, columnId),
-								eq(schema.items.completed, false),
-								eq(schema.items.userId, userId),
+								columnId
+									? eq(schema.tasks.columnId, columnId)
+									: isNull(schema.tasks.columnId),
+								eq(schema.tasks.completed, false),
+								eq(schema.tasks.userId, userId),
 							),
 						);
 
@@ -102,12 +106,12 @@ export const tasksRepository = {
 
 		// Update the task with new data
 		const [updatedTask] = await db
-			.update(schema.items)
+			.update(schema.tasks)
 			.set({
 				...cleanUpdateData,
 				updatedAt: new Date(),
 			})
-			.where(and(eq(schema.items.id, id), eq(schema.items.userId, userId)))
+			.where(and(eq(schema.tasks.id, id), eq(schema.tasks.userId, userId)))
 			.returning();
 
 		if (!updatedTask) {

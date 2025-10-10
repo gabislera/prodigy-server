@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import z from "zod";
 import { db } from "../db/connection";
@@ -70,7 +70,9 @@ export const updateTaskRoute: FastifyPluginAsyncZod = async (server) => {
 						.from(schema.tasks)
 						.where(
 							and(
-								eq(schema.tasks.columnId, columnId),
+								columnId
+									? eq(schema.tasks.columnId, columnId)
+									: isNull(schema.tasks.columnId),
 								eq(schema.tasks.userId, userId),
 							),
 						);
@@ -87,7 +89,9 @@ export const updateTaskRoute: FastifyPluginAsyncZod = async (server) => {
 						})
 						.where(
 							and(
-								eq(schema.tasks.columnId, columnId),
+								columnId
+									? eq(schema.tasks.columnId, columnId)
+									: isNull(schema.tasks.columnId),
 								eq(schema.tasks.completed, false),
 								eq(schema.tasks.userId, userId),
 							),

@@ -50,26 +50,6 @@ export const tasks = pgTable("tasks", {
 	id: text("id")
 		.primaryKey()
 		.$defaultFn(() => uuidv7()),
-	userId: text("user_id").notNull(),
-	columnId: text("column_id")
-		.notNull()
-		.references(() => taskColumns.id, { onDelete: "cascade" }),
-	title: text("title").notNull(),
-	description: text("description").notNull(),
-	priority: priorityEnum("priority").default("medium").notNull(),
-	position: integer("position").default(0).notNull(),
-	completed: boolean("completed").default(false).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true })
-		.defaultNow()
-		.notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true })
-		.defaultNow()
-		.notNull(),
-});
-export const items = pgTable("items", {
-	id: text("id")
-		.primaryKey()
-		.$defaultFn(() => uuidv7()),
 
 	userId: text("user_id").notNull(),
 

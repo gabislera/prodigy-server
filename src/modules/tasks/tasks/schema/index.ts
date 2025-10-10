@@ -1,8 +1,8 @@
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { items } from "../../../../db/schema/tasks";
+import { tasks } from "../../../../db/schema/tasks";
 
-const baseTaskSchema = createInsertSchema(items).omit({
+const baseTaskSchema = createInsertSchema(tasks).omit({
 	id: true,
 	userId: true,
 	createdAt: true,

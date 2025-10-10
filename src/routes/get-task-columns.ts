@@ -19,24 +19,24 @@ export const getTaskColumnsRoute: FastifyPluginAsyncZod = async (server) => {
 					columnId: schema.taskColumns.id,
 					columnTitle: schema.taskColumns.title,
 					columnOrder: schema.taskColumns.order,
-					taskId: schema.items.id,
-					taskTitle: schema.items.title,
-					taskDescription: schema.items.description,
-					taskPriority: schema.items.priority,
-					taskPosition: schema.items.position,
-					taskCompleted: schema.items.completed,
-					taskStartDate: schema.items.startDate,
-					taskEndDate: schema.items.endDate,
-					taskAllDay: schema.items.allDay,
-					taskStatus: schema.items.status,
-					taskType: schema.items.type,
-					taskCreatedAt: schema.items.createdAt,
-					taskUpdatedAt: schema.items.updatedAt,
+					taskId: schema.tasks.id,
+					taskTitle: schema.tasks.title,
+					taskDescription: schema.tasks.description,
+					taskPriority: schema.tasks.priority,
+					taskPosition: schema.tasks.position,
+					taskCompleted: schema.tasks.completed,
+					taskStartDate: schema.tasks.startDate,
+					taskEndDate: schema.tasks.endDate,
+					taskAllDay: schema.tasks.allDay,
+					taskStatus: schema.tasks.status,
+					taskType: schema.tasks.type,
+					taskCreatedAt: schema.tasks.createdAt,
+					taskUpdatedAt: schema.tasks.updatedAt,
 				})
 				.from(schema.taskColumns)
 				.leftJoin(
-					schema.items,
-					eq(schema.items.columnId, schema.taskColumns.id),
+					schema.tasks,
+					eq(schema.tasks.columnId, schema.taskColumns.id),
 				)
 				.where(
 					and(
@@ -46,8 +46,8 @@ export const getTaskColumnsRoute: FastifyPluginAsyncZod = async (server) => {
 				)
 				.orderBy(
 					schema.taskColumns.order,
-					schema.items.completed,
-					schema.items.position,
+					schema.tasks.completed,
+					schema.tasks.position,
 				);
 
 			// transforma em estrutura hierárquica

@@ -19,19 +19,24 @@ export const getTaskColumnsRoute: FastifyPluginAsyncZod = async (server) => {
 					columnId: schema.taskColumns.id,
 					columnTitle: schema.taskColumns.title,
 					columnOrder: schema.taskColumns.order,
-					taskId: schema.tasks.id,
-					taskTitle: schema.tasks.title,
-					taskDescription: schema.tasks.description,
-					taskPriority: schema.tasks.priority,
-					taskPosition: schema.tasks.position,
-					taskCompleted: schema.tasks.completed,
-					taskCreatedAt: schema.tasks.createdAt,
-					taskUpdatedAt: schema.tasks.updatedAt,
+					taskId: schema.items.id,
+					taskTitle: schema.items.title,
+					taskDescription: schema.items.description,
+					taskPriority: schema.items.priority,
+					taskPosition: schema.items.position,
+					taskCompleted: schema.items.completed,
+					taskStartDate: schema.items.startDate,
+					taskEndDate: schema.items.endDate,
+					taskAllDay: schema.items.allDay,
+					taskStatus: schema.items.status,
+					taskType: schema.items.type,
+					taskCreatedAt: schema.items.createdAt,
+					taskUpdatedAt: schema.items.updatedAt,
 				})
 				.from(schema.taskColumns)
 				.leftJoin(
-					schema.tasks,
-					eq(schema.tasks.columnId, schema.taskColumns.id),
+					schema.items,
+					eq(schema.items.columnId, schema.taskColumns.id),
 				)
 				.where(
 					and(
@@ -41,8 +46,8 @@ export const getTaskColumnsRoute: FastifyPluginAsyncZod = async (server) => {
 				)
 				.orderBy(
 					schema.taskColumns.order,
-					schema.tasks.completed,
-					schema.tasks.position,
+					schema.items.completed,
+					schema.items.position,
 				);
 
 			// transforma em estrutura hierárquica
@@ -68,6 +73,11 @@ export const getTaskColumnsRoute: FastifyPluginAsyncZod = async (server) => {
 						columnId: row.columnId,
 						position: row.taskPosition,
 						completed: row.taskCompleted,
+						startDate: row.taskStartDate,
+						endDate: row.taskEndDate,
+						allDay: row.taskAllDay,
+						status: row.taskStatus,
+						type: row.taskType,
 						createdAt: row.taskCreatedAt,
 						updatedAt: row.taskUpdatedAt,
 					});

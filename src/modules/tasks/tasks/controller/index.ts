@@ -2,6 +2,11 @@ import { tasksRepository } from "../repository";
 import type { CreateTaskSchema, UpdateTaskSchema } from "../schema";
 
 export const tasksController = {
+	async getAll(userId: string) {
+		const tasks = await tasksRepository.getAll(userId);
+		return tasks;
+	},
+
 	async create(userId: string, data: CreateTaskSchema) {
 		const task = await tasksRepository.create(userId, data);
 		if (!task) throw new Error("Erro ao criar tarefa");

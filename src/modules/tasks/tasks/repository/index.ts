@@ -4,6 +4,15 @@ import { schema } from "../../../../db/schema";
 import type { CreateTaskSchema, UpdateTaskSchema } from "../schema";
 
 export const tasksRepository = {
+	async getAll(userId: string) {
+		const tasks = await db
+			.select()
+			.from(schema.tasks)
+			.where(eq(schema.tasks.userId, userId));
+
+		return tasks;
+	},
+
 	async create(userId: string, data: CreateTaskSchema) {
 		const result = await db
 			.insert(schema.tasks)

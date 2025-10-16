@@ -24,4 +24,10 @@ export const groupsController = {
 		const group = await groupsRepository.update(userId, id, data);
 		return group;
 	},
+
+	async getWithDetails(userId: string) {
+		const groups = await groupsRepository.getWithDetails(userId);
+		if (!groups) throw new Error("Erro ao buscar grupos com detalhes");
+		return groups;
+	},
 };

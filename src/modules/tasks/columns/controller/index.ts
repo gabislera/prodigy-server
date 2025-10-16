@@ -1,7 +1,24 @@
 import { columnsRepository } from "../repository";
 import type { UpdateColumnOrderSchema } from "../schema";
 
+interface CreateColumnData {
+	groupId: string;
+	title: string;
+	order: number;
+}
+
 export const columnsController = {
+	async create(userId: string, data: CreateColumnData) {
+		const column = await columnsRepository.create(
+			userId,
+			data.groupId,
+			data.title,
+			data.order,
+		);
+		if (!column) throw new Error("Erro ao criar coluna");
+		return column;
+	},
+
 	async get(userId: string, groupId: string) {
 		const columns = await columnsRepository.getColumnsWithTasks(
 			userId,

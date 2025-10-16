@@ -13,9 +13,12 @@ export const groupsRepository = {
 
 		const group = result[0];
 
-		await columnsRepository.create(userId, group.id, "A Fazer", 0);
-		await columnsRepository.create(userId, group.id, "Fazendo", 1);
-		await columnsRepository.create(userId, group.id, "Concluído", 2);
+		// Não criar colunas padrões para o grupo Calendar
+		if (group.name.toLowerCase() !== "calendar") {
+			await columnsRepository.create(userId, group.id, "A Fazer", 0);
+			await columnsRepository.create(userId, group.id, "Fazendo", 1);
+			await columnsRepository.create(userId, group.id, "Concluído", 2);
+		}
 
 		return group;
 	},
@@ -67,5 +70,39 @@ export const groupsRepository = {
 			.returning();
 
 		return result;
+	},
+
+	async getWithDetails(userId: string) {
+		// Buscar todos os grupos do usuário
+		const groups = await db
+			.select({
+				id: schema.taskGroups.id,
+				name: schema.taskGroups.name,
+				icon: schema.taskGroups.icon,
+				color: schema.taskGroups.color,
+				bgColor: schema.taskGroups.bgColor,
+				createdAt: schema.taskGroups.createdAt,
+				updatedAt: schema.taskGroups.updatedAt,
+			})
+			.from(schema.taskGroups)
+			.where(eq(schema.taskGroups.userId, userId))
+			.orderBy(schema.taskGroups.createdAt);
+
+		// Para cada grupo, buscar suas colunas e tasks
+		const groupsWithDetails = await Promise.all(
+			groups.map(async (group) => {
+				const columns = await columnsRepository.getColumnsWithTasks(
+					userId,
+					group.id,
+				);
+
+				return {
+					...group,
+					columns,
+				};
+			}),
+		);
+
+		return groupsWithDetails;
 	},
 };

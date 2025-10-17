@@ -96,9 +96,22 @@ export const groupsRepository = {
 					group.id,
 				);
 
+				const taskCount = columns.reduce(
+					(total, column) => total + column.tasks.length,
+					0,
+				);
+
+				const completedCount = columns.reduce(
+					(total, column) =>
+						total + column.tasks.filter((task) => task.completed).length,
+					0,
+				);
+
 				return {
 					...group,
 					columns,
+					taskCount,
+					completedCount,
 				};
 			}),
 		);

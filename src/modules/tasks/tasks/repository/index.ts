@@ -49,6 +49,21 @@ export const tasksRepository = {
 			throw new Error("No fields provided to update");
 		}
 
+		if (
+			cleanUpdateData.startDate &&
+			typeof cleanUpdateData.startDate === "string"
+		) {
+			// biome-ignore lint/suspicious/noExplicitAny: Necessário para conversão de tipo de data
+			(cleanUpdateData as any).startDate = new Date(cleanUpdateData.startDate);
+		}
+		if (
+			cleanUpdateData.endDate &&
+			typeof cleanUpdateData.endDate === "string"
+		) {
+			// biome-ignore lint/suspicious/noExplicitAny: Necessário para conversão de tipo de data
+			(cleanUpdateData as any).endDate = new Date(cleanUpdateData.endDate);
+		}
+
 		// Check if the task exists and belongs to the current user
 		const currentTask = await db
 			.select()

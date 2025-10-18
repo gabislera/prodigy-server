@@ -4,8 +4,6 @@ import {
 	generateAccessToken,
 	REFRESH_TOKEN_EXPIRES_DAYS,
 } from "../../../utils/jwt";
-import { columnsController } from "../../tasks/columns/controller";
-import { groupsController } from "../../tasks/groups/controller";
 import { authRepository } from "../repository";
 
 const argon2Options: argon2.Options & { raw?: false } = {
@@ -70,23 +68,6 @@ export const authController = {
 			email: data.email,
 			passwordHash: hash,
 		});
-
-		try {
-			const calendarGroup = await groupsController.create(user.id, {
-				name: "Calendar",
-				icon: "Calendar",
-				color: "#3b82f6",
-				bgColor: "#dbeafe",
-			});
-
-			await columnsController.create(user.id, {
-				groupId: calendarGroup.id,
-				title: "Calendar",
-				order: 0,
-			});
-		} catch (error) {
-			console.error("Erro ao criar grupo/coluna Calendar padrão:", error);
-		}
 
 		const sessionToken = randomUUID();
 		const expiresAt = new Date(

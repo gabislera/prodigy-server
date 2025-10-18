@@ -13,7 +13,7 @@ export const createTaskSchema = baseTaskSchema.extend({
 	title: z.string().min(1, "Título obrigatório"),
 	description: z.string().optional(),
 	priority: z.enum(["high", "medium", "low"]),
-	columnId: z.uuid("columnId inválido"),
+	columnId: z.uuid("columnId inválido").nullable().optional(),
 	position: z.number().nonnegative(),
 	completed: z.boolean().default(false),
 	startDate: z.string().nullable().optional(),

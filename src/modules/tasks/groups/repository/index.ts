@@ -13,12 +13,10 @@ export const groupsRepository = {
 
 		const group = result[0];
 
-		// Não criar colunas padrões para o grupo Calendar
-		if (group.name.toLowerCase() !== "calendar") {
-			await columnsRepository.create(userId, group.id, "A Fazer", 0);
-			await columnsRepository.create(userId, group.id, "Fazendo", 1);
-			await columnsRepository.create(userId, group.id, "Concluído", 2);
-		}
+		// Criar colunas padrões para todos os grupos
+		await columnsRepository.create(userId, group.id, "A Fazer", 0);
+		await columnsRepository.create(userId, group.id, "Fazendo", 1);
+		await columnsRepository.create(userId, group.id, "Concluído", 2);
 
 		return group;
 	},

@@ -36,6 +36,7 @@ export const groupsRepository = {
 			.select({
 				id: schema.taskGroups.id,
 				name: schema.taskGroups.name,
+				description: schema.taskGroups.description,
 				createdAt: schema.taskGroups.createdAt,
 				updatedAt: schema.taskGroups.updatedAt,
 			})
@@ -73,6 +74,7 @@ export const groupsRepository = {
 			.select({
 				id: schema.taskGroups.id,
 				name: schema.taskGroups.name,
+				description: schema.taskGroups.description,
 				createdAt: schema.taskGroups.createdAt,
 				updatedAt: schema.taskGroups.updatedAt,
 			})

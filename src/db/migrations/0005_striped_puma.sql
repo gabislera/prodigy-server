@@ -1,0 +1,1 @@
+ALTER TABLE "task_groups" ADD COLUMN "description" text DEFAULT '';

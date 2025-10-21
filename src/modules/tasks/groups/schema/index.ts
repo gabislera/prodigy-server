@@ -11,6 +11,7 @@ const baseGroupSchema = createInsertSchema(taskGroups).omit({
 
 export const createGroupSchema = baseGroupSchema.extend({
 	name: z.string().min(1, "Nome obrigatório"),
+	description: z.string().optional(),
 });
 
 export const updateGroupSchema = createGroupSchema.partial();

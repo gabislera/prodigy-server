@@ -17,6 +17,7 @@ export const taskGroups = pgTable("task_groups", {
 		.$defaultFn(() => uuidv7()),
 	userId: text("user_id").notNull(),
 	name: text("name").notNull(),
+	description: text("description").default(""),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.defaultNow()
 		.notNull(),

@@ -54,6 +54,38 @@ export const columnsRepository = {
 		return result[0];
 	},
 
+	async update(userId: string, columnId: string, title: string) {
+		const result = await db
+			.update(schema.taskColumns)
+			.set({
+				title,
+				updatedAt: new Date(),
+			})
+			.where(
+				and(
+					eq(schema.taskColumns.id, columnId),
+					eq(schema.taskColumns.userId, userId),
+				),
+			)
+			.returning();
+
+		return result[0];
+	},
+
+	async delete(userId: string, columnId: string) {
+		const result = await db
+			.delete(schema.taskColumns)
+			.where(
+				and(
+					eq(schema.taskColumns.id, columnId),
+					eq(schema.taskColumns.userId, userId),
+				),
+			)
+			.returning();
+
+		return result[0];
+	},
+
 	// Fetch all columns (and their tasks) for a given group and user.
 	// Returns a hierarchical structure: columns[] → tasks[]
 

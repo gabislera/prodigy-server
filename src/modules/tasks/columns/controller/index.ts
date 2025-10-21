@@ -15,7 +15,7 @@ export const columnsController = {
 			data.title,
 			data.order,
 		);
-		if (!column) throw new Error("Erro ao criar coluna");
+		if (!column) throw new Error("Error creating column");
 		return column;
 	},
 
@@ -37,5 +37,19 @@ export const columnsController = {
 
 		if (!updated) throw new Error("Column not found or not updated");
 		return updated;
+	},
+
+	async update(userId: string, columnId: string, title: string) {
+		const updated = await columnsRepository.update(userId, columnId, title);
+
+		if (!updated) throw new Error("Column not found or not updated");
+		return updated;
+	},
+
+	async delete(userId: string, columnId: string) {
+		const deleted = await columnsRepository.delete(userId, columnId);
+
+		if (!deleted) throw new Error("Column not found or not deleted");
+		return deleted;
 	},
 };

@@ -4,19 +4,19 @@ import type { CreateGroupSchema, UpdateGroupSchema } from "../schema";
 export const groupsController = {
 	async create(userId: string, data: CreateGroupSchema) {
 		const group = await groupsRepository.create(userId, data);
-		if (!group) throw new Error("Erro ao criar grupo");
+		if (!group) throw new Error("Error creating group");
 		return group;
 	},
 
 	async delete(userId: string, id: string) {
 		const group = await groupsRepository.delete(userId, id);
-		if (!group) throw new Error("Erro ao deletar grupo");
+		if (!group) throw new Error("Error deleting group");
 		return group;
 	},
 
 	async get(userId: string) {
 		const groups = await groupsRepository.get(userId);
-		if (!groups) throw new Error("Erro ao buscar grupos");
+		if (!groups) throw new Error("Error getting groups");
 		return groups;
 	},
 
@@ -27,7 +27,7 @@ export const groupsController = {
 
 	async getWithDetails(userId: string) {
 		const groups = await groupsRepository.getWithDetails(userId);
-		if (!groups) throw new Error("Erro ao buscar grupos com detalhes");
+		if (!groups) throw new Error("Error getting groups with details");
 		return groups;
 	},
 };

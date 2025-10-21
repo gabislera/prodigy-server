@@ -24,5 +24,12 @@ export const updateColumnOrderSchema = z
 	})
 	.strict();
 
+export const updateColumnSchema = z
+	.object({
+		title: z.string().min(1, "Título obrigatório"),
+	})
+	.strict();
+
 export type CreateColumnSchema = z.infer<typeof createColumnSchema>;
 export type UpdateColumnOrderSchema = z.infer<typeof updateColumnOrderSchema>;
+export type UpdateColumnSchema = z.infer<typeof updateColumnSchema>;

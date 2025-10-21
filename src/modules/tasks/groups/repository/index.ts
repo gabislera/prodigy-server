@@ -36,9 +36,6 @@ export const groupsRepository = {
 			.select({
 				id: schema.taskGroups.id,
 				name: schema.taskGroups.name,
-				icon: schema.taskGroups.icon,
-				color: schema.taskGroups.color,
-				bgColor: schema.taskGroups.bgColor,
 				createdAt: schema.taskGroups.createdAt,
 				updatedAt: schema.taskGroups.updatedAt,
 			})
@@ -76,9 +73,6 @@ export const groupsRepository = {
 			.select({
 				id: schema.taskGroups.id,
 				name: schema.taskGroups.name,
-				icon: schema.taskGroups.icon,
-				color: schema.taskGroups.color,
-				bgColor: schema.taskGroups.bgColor,
 				createdAt: schema.taskGroups.createdAt,
 				updatedAt: schema.taskGroups.updatedAt,
 			})

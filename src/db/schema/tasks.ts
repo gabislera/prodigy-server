@@ -17,9 +17,6 @@ export const taskGroups = pgTable("task_groups", {
 		.$defaultFn(() => uuidv7()),
 	userId: text("user_id").notNull(),
 	name: text("name").notNull(),
-	icon: text("icon").notNull(),
-	color: text("color").notNull(),
-	bgColor: text("bg_color").notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.defaultNow()
 		.notNull(),

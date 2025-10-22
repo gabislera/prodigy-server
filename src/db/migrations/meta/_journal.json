@@ -43,6 +43,13 @@
       "when": 1761006440476,
       "tag": "0005_striped_puma",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1761141901968,
+      "tag": "0006_naive_titania",
+      "breakpoints": true
     }
   ]
 }

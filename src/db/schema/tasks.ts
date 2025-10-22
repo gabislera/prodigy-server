@@ -59,7 +59,7 @@ export const tasks = pgTable("tasks", {
 	priority: text("priority").default("medium"),
 
 	columnId: text("column_id").references(() => taskColumns.id, {
-		onDelete: "set null",
+		onDelete: "cascade",
 	}),
 
 	position: integer("position").default(0),

@@ -5,7 +5,7 @@ import { tasksController } from "../controller";
 import { taskParamsSchema } from "../schema";
 
 export const deleteTaskRoute: FastifyPluginAsyncZod = async (server) => {
-	server.post(
+	server.delete(
 		"/:id",
 		{
 			preHandler: authGuard,

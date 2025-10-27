@@ -30,4 +30,9 @@ export const groupsController = {
 		if (!groups) throw new Error("Error getting groups with details");
 		return groups;
 	},
+
+	async getStats(userId: string) {
+		const stats = await groupsRepository.getStats(userId);
+		return stats;
+	},
 };

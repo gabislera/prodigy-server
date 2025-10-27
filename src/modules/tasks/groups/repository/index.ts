@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "../../../../db/connection";
 import { schema } from "../../../../db/schema";
 import { columnsRepository } from "../../columns/repository";
@@ -44,7 +44,30 @@ export const groupsRepository = {
 			.where(eq(schema.taskGroups.userId, userId))
 			.orderBy(schema.taskGroups.createdAt);
 
-		return groups;
+		// Adicionar contadores com query otimizada
+		const groupsWithCounts = await Promise.all(
+			groups.map(async (group) => {
+				const [counts] = await db
+					.select({
+						taskCount: sql<number>`COUNT(DISTINCT ${schema.tasks.id})`,
+						completedCount: sql<number>`COUNT(DISTINCT CASE WHEN ${schema.tasks.completed} = true THEN ${schema.tasks.id} END)`,
+					})
+					.from(schema.taskColumns)
+					.leftJoin(
+						schema.tasks,
+						eq(schema.tasks.columnId, schema.taskColumns.id),
+					)
+					.where(eq(schema.taskColumns.groupId, group.id));
+
+				return {
+					...group,
+					taskCount: counts?.taskCount || 0,
+					completedCount: counts?.completedCount || 0,
+				};
+			}),
+		);
+
+		return groupsWithCounts;
 	},
 
 	async update(userId: string, id: string, data: UpdateGroupSchema) {
@@ -111,5 +134,31 @@ export const groupsRepository = {
 		);
 
 		return groupsWithDetails;
+	},
+
+	async getStats(userId: string) {
+		// Buscar todas as tasks do usuário diretamente pela tabela tasks
+		const [result] = await db
+			.select({
+				totalTasks: sql<number>`COUNT(${schema.tasks.id})`,
+				completedTasks: sql<number>`COUNT(CASE WHEN ${schema.tasks.completed} = true THEN 1 END)`,
+				inProgressTasks: sql<number>`COUNT(CASE WHEN ${schema.tasks.completed} = false AND ${schema.tasks.columnId} IS NOT NULL THEN 1 END)`,
+				todayTasks: sql<number>`COUNT(CASE WHEN DATE(${schema.tasks.startDate}) = CURRENT_DATE OR DATE(${schema.tasks.endDate}) = CURRENT_DATE THEN 1 END)`,
+			})
+			.from(schema.tasks)
+			.where(eq(schema.tasks.userId, userId));
+
+		const totalTasks = result?.totalTasks || 0;
+		const completedTasks = result?.completedTasks || 0;
+		const efficiency =
+			totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+		return {
+			totalTasks,
+			completedTasks: completedTasks || 0,
+			inProgressTasks: result?.inProgressTasks || 0,
+			todayTasks: result?.todayTasks || 0,
+			efficiency,
+		};
 	},
 };

@@ -1,8 +1,9 @@
-import { randomUUID } from "node:crypto";
 import * as argon2 from "argon2";
 import {
 	generateAccessToken,
-	REFRESH_TOKEN_EXPIRES_DAYS,
+	generateRefreshToken,
+	REFRESH_TOKEN_EXPIRES_SECONDS,
+	verifyRefreshToken,
 } from "../../../utils/jwt";
 import { authRepository } from "../repository";
 
@@ -27,30 +28,34 @@ export const authController = {
 			throw new Error("Invalid credentials");
 		}
 
-		const sessionToken = randomUUID();
+		const tokenPayload = {
+			id: user.id,
+			email: user.email,
+			name: user.name,
+		};
+
+		// Generate JWT tokens
+		const accessToken = generateAccessToken(tokenPayload);
+		const refreshToken = generateRefreshToken(tokenPayload);
+
+		// Store refresh token in database for validation
 		const expiresAt = new Date(
-			Date.now() + REFRESH_TOKEN_EXPIRES_DAYS * 24 * 60 * 60 * 1000,
+			Date.now() + REFRESH_TOKEN_EXPIRES_SECONDS * 1000,
 		);
 
 		await authRepository.createSession({
 			userId: user.id,
-			sessionToken,
+			sessionToken: refreshToken,
 			expiresAt,
 		});
 
-		const accessToken = generateAccessToken({
-			id: user.id,
-			email: user.email,
-			name: user.name,
-		});
-
-		const { passwordHash: _, ...userSafe } = user as any;
+		// Remove password hash from user object
+		const { passwordHash: _passwordHash, ...userSafe } = user;
 
 		return {
 			accessToken,
+			refreshToken,
 			user: userSafe,
-			sessionToken,
-			expiresAt,
 		};
 	},
 
@@ -69,28 +74,48 @@ export const authController = {
 			passwordHash: hash,
 		});
 
-		const sessionToken = randomUUID();
+		// try {
+		// 	const calendarGroup = await groupsController.create(user.id, {
+		// 		name: "Calendar",
+		// 		icon: "Calendar",
+		// 		color: "#3b82f6",
+		// 		bgColor: "#dbeafe",
+		// 	});
+
+		// 	await columnsController.create(user.id, {
+		// 		groupId: calendarGroup.id,
+		// 		title: "Calendar",
+		// 		order: 0,
+		// 	});
+		// } catch (error) {
+		// 	console.error("Error creating default Calendar group/column:", error);
+		// }
+
+		const tokenPayload = {
+			id: user.id,
+			email: user.email,
+			name: user.name,
+		};
+
+		// Generate JWT tokens
+		const accessToken = generateAccessToken(tokenPayload);
+		const refreshToken = generateRefreshToken(tokenPayload);
+
+		// Store refresh token in database for validation
 		const expiresAt = new Date(
-			Date.now() + REFRESH_TOKEN_EXPIRES_DAYS * 24 * 60 * 60 * 1000,
+			Date.now() + REFRESH_TOKEN_EXPIRES_SECONDS * 1000,
 		);
 
 		await authRepository.createSession({
 			userId: user.id,
-			sessionToken,
+			sessionToken: refreshToken,
 			expiresAt,
-		});
-
-		const accessToken = generateAccessToken({
-			id: user.id,
-			name: user.name,
-			email: user.email,
 		});
 
 		return {
 			user,
 			accessToken,
-			sessionToken,
-			expiresAt,
+			refreshToken,
 		};
 	},
 
@@ -106,18 +131,36 @@ export const authController = {
 			throw new Error("Missing refresh token");
 		}
 
-		const session = await authRepository.findSession(refreshToken);
-
-		if (!session || new Date(session.expiresAt) < new Date()) {
-			throw new Error("Invalid or expired session");
+		// Verify JWT signature and expiration
+		try {
+			verifyRefreshToken(refreshToken);
+		} catch (error) {
+			throw new Error(
+				error instanceof Error ? error.message : "Invalid refresh token",
+			);
 		}
 
+		// Validate refresh token exists in database (not revoked)
+		const session = await authRepository.findSession(refreshToken);
+
+		if (!session) {
+			throw new Error("Invalid or revoked session");
+		}
+
+		// Double-check session expiration
+		if (new Date(session.expiresAt) < new Date()) {
+			await authRepository.deleteSession(refreshToken);
+			throw new Error("Session expired");
+		}
+
+		// Get fresh user data
 		const user = await authRepository.findUserById(session.userId);
 
 		if (!user) {
 			throw new Error("User not found");
 		}
 
+		// Generate new access token with fresh user data
 		const accessToken = generateAccessToken({
 			id: user.id,
 			name: user.name,

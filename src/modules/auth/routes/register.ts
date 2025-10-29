@@ -1,4 +1,10 @@
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+import {
+	ACCESS_TOKEN_COOKIE,
+	accessTokenCookieOptions,
+	REFRESH_TOKEN_COOKIE,
+	refreshTokenCookieOptions,
+} from "../../../utils/cookie";
 import { authController } from "../controller";
 import { registerSchema } from "../schema";
 
@@ -15,21 +21,30 @@ export const registerRoute: FastifyPluginAsyncZod = async (server) => {
 				const { email, name, password } = request.body;
 				const result = await authController.register({ email, name, password });
 
-				reply.setCookie("refreshToken", result.sessionToken, {
-					httpOnly: true,
-					sameSite: "lax",
-					secure: process.env.NODE_ENV === "production",
-					path: "/",
-					expires: result.expiresAt,
-				});
+				// Set access token in httpOnly cookie (short-lived)
+				reply.setCookie(
+					ACCESS_TOKEN_COOKIE,
+					result.accessToken,
+					accessTokenCookieOptions,
+				);
 
+				// Set refresh token in httpOnly cookie (long-lived)
+				reply.setCookie(
+					REFRESH_TOKEN_COOKIE,
+					result.refreshToken,
+					refreshTokenCookieOptions,
+				);
+
+				// Return only user data (no tokens in response body)
 				return reply.send({
 					user: result.user,
-					accessToken: result.accessToken,
+					message: "Registration successful",
 				});
 			} catch (error) {
 				return reply.status(400).send({
-					error: error instanceof Error ? error.message : "Registration failed",
+					error: "Registration failed",
+					message:
+						error instanceof Error ? error.message : "Registration failed",
 				});
 			}
 		},

@@ -19,10 +19,11 @@ server.setValidatorCompiler(validatorCompiler);
 server.setSerializerCompiler(serializerCompiler);
 
 server.register(fastifyCors, {
-	origin: true, // Allow credentials
-	credentials: true,
-	methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+	origin: env.FRONTEND_URL || "http://localhost:5173", // Specify frontend origin for cookie security
+	credentials: true, // Allow cookies to be sent with requests
+	methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 	allowedHeaders: ["Content-Type", "Authorization"],
+	exposedHeaders: ["Set-Cookie"], // Allow Set-Cookie header to be exposed
 });
 
 server.register(fastifyCookie);

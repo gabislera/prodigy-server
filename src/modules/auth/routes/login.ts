@@ -1,4 +1,10 @@
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+import {
+	ACCESS_TOKEN_COOKIE,
+	accessTokenCookieOptions,
+	REFRESH_TOKEN_COOKIE,
+	refreshTokenCookieOptions,
+} from "../../../utils/cookie";
 import { authController } from "../controller";
 import { loginSchema } from "../schema";
 
@@ -15,21 +21,30 @@ export const loginRoute: FastifyPluginAsyncZod = async (server) => {
 				const { email, password } = request.body;
 				const result = await authController.login(email, password);
 
-				reply.setCookie("refreshToken", result.sessionToken, {
-					httpOnly: true,
-					sameSite: "lax",
-					secure: process.env.NODE_ENV === "production",
-					path: "/",
-					expires: result.expiresAt,
-				});
+				// Set access token in httpOnly cookie (short-lived)
+				reply.setCookie(
+					ACCESS_TOKEN_COOKIE,
+					result.accessToken,
+					accessTokenCookieOptions,
+				);
 
+				// Set refresh token in httpOnly cookie (long-lived)
+				reply.setCookie(
+					REFRESH_TOKEN_COOKIE,
+					result.refreshToken,
+					refreshTokenCookieOptions,
+				);
+
+				// Return only user data (no tokens in response body)
 				return reply.send({
-					accessToken: result.accessToken,
 					user: result.user,
+					message: "Login successful",
 				});
 			} catch (error) {
 				return reply.status(401).send({
-					error: error instanceof Error ? error.message : "Invalid credentials",
+					error: "Authentication failed",
+					message:
+						error instanceof Error ? error.message : "Invalid credentials",
 				});
 			}
 		},

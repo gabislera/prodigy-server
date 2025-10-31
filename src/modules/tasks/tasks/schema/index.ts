@@ -17,9 +17,11 @@ export const createTaskSchema = baseTaskSchema.extend({
 	columnId: z.uuid("columnId inválido").nullable().optional(),
 	position: z.number().nonnegative(),
 	completed: z.boolean().default(false),
-	startDate: z.string().nullable().optional(),
-	endDate: z.string().nullable().optional(),
+	startDate: z.string().optional().nullable(),
+	endDate: z.string().optional().nullable(),
 	groupId: z.uuid().optional(),
+	allDay: z.boolean().optional(),
+	status: z.string().optional(),
 });
 
 export const updateTaskSchema = createTaskSchema.partial();

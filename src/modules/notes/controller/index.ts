@@ -33,7 +33,7 @@ export const notesController = {
 
 	async generateAiNote(messages: UIMessage[]) {
 		const result = streamText({
-			model: openrouter.chat("deepseek/deepseek-chat-v3.1:free"),
+			model: openrouter.chat("google/gemini-2.0-flash-lite-001"),
 			messages: convertToModelMessages(messages),
 			system: `Você é um assistente que ajuda o usuário a editar notas em Markdown. Sempre responda apenas com o conteúdo atualizado da nota, sem explicações extras, sem aspas no início ou fim.`,
 		});
